@@ -2,6 +2,7 @@ package test
 
 import "github.com/fizx/goingo"
 import "context"
+import "errors"
 type TestServiceEngine struct {
 
   srv TestServiceServer
@@ -13,8 +14,17 @@ type TestServiceServer interface {
 }
 
 func (e *TestServiceEngine) Call(ctx context.Context, in []byte) ([]byte, error) {
-  //DoSomething
-  return nil, nil
+  _, m, b := goingo.NameUnpack(in)
+  switch m {
+  case "DoSomething":
+    in := &Entity{} 
+    err := in.Unmarshal(b)
+    if err != nil { return nil, err }
+    out, err := e.srv.DoSomething(ctx, in)
+    if err != nil { return nil, err }
+    return out.Marshal()
+  default: return nil, errors.New("method not found"+m)
+  }
 }
 
 func BindTestServiceServer(srv TestServiceServer) goingo.Engine {

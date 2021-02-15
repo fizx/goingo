@@ -72,10 +72,20 @@ func handleService(service *descriptors.ServiceDescriptorProto, content *strings
 	content.WriteString("}\n\n")
 
 	content.WriteString("func (e *" + *service.Name + "Engine) Call(ctx context.Context, in []byte) ([]byte, error) {\n")
+	content.WriteString("  _, m, b := goingo.NameUnpack(in)\n")
+	content.WriteString("  switch m {\n")
+
 	for _, m := range service.Method {
-		content.WriteString("  //" + *m.Name + "\n")
+		content.WriteString("  case \"" + *m.Name + "\":\n")
+		content.WriteString("    in := &" + nodot(*m.InputType) + "{} \n")
+		content.WriteString("    err := in.Unmarshal(b)\n")
+		content.WriteString("    if err != nil { return nil, err }\n")
+		content.WriteString("    out, err := e.srv." + *m.Name + "(ctx, in)\n")
+		content.WriteString("    if err != nil { return nil, err }\n")
+		content.WriteString("    return out.Marshal()\n")
 	}
-	content.WriteString("  return nil, nil\n")
+	content.WriteString("  default: return nil, errors.New(\"method not found\"+m)\n")
+	content.WriteString("  }\n")
 	content.WriteString("}\n\n")
 
 	content.WriteString("func Bind" + *service.Name + "Server(srv " + *service.Name + "Server) goingo.Engine {\n\n")
@@ -114,6 +124,7 @@ func handleFile(fdp *descriptors.FileDescriptorProto) *plugin_go.CodeGeneratorRe
 	content.WriteString("import \"github.com/fizx/goingo\"\n")
 	// content.WriteString("import proto \"github.com/gogo/protobuf/proto\"\n")
 	content.WriteString("import \"context\"\n")
+	content.WriteString("import \"errors\"\n")
 
 	for _, s := range fdp.Service {
 		handleService(s, content)
