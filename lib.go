@@ -1,5 +1,7 @@
 package goingo
 
+import "context"
+
 type Engine interface {
-	Call([]byte) []byte
+	Call(context.Context, []byte) ([]byte, error)
 }

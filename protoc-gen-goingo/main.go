@@ -36,8 +36,8 @@ func main() {
 		os.Stdout.Write(bytes)
 	} else {
 		replacements := map[string]string{
-			`fmt "fmt"`:                              `"github.com/fizx/stubproto"`,
-			`proto "github.com/gogo/protobuf/proto"`: `"github.com/fizx/stubproto/fmt"`,
+			`fmt "fmt"`:                              `"github.com/fizx/stubproto/fmt"`,
+			`proto "github.com/gogo/protobuf/proto"`: `"github.com/fizx/stubproto"`,
 		}
 		err := filepath.Walk(*fix, func(path string, info os.FileInfo, err error) error {
 			if strings.HasSuffix(path, ".go") && !info.IsDir() {
@@ -61,12 +61,40 @@ func nodot(s string) string {
 }
 
 func handleService(service *descriptors.ServiceDescriptorProto, content *strings.Builder) {
-	content.WriteString("func New" + *service.Name + "Client(engine Engine) (*" + *service.Name + "Client) { return &" + *service.Name + "Client{engine} }\n\n")
+	content.WriteString("type " + *service.Name + "Engine struct {\n\n")
+	content.WriteString("  srv " + *service.Name + "Server\n")
+	content.WriteString("}\n\n")
+
+	content.WriteString("type " + *service.Name + "Server interface {\n\n")
+	for _, m := range service.Method {
+		content.WriteString("  " + *m.Name + "(ctx context.Context, in *" + nodot(*m.InputType) + ") (*" + nodot(*m.OutputType) + ", error) \n")
+	}
+	content.WriteString("}\n\n")
+
+	content.WriteString("func (e *" + *service.Name + "Engine) Call(ctx context.Context, in []byte) ([]byte, error) {\n")
+	for _, m := range service.Method {
+		content.WriteString("  //" + *m.Name + "\n")
+	}
+	content.WriteString("  return nil, nil\n")
+	content.WriteString("}\n\n")
+
+	content.WriteString("func Bind" + *service.Name + "Server(srv " + *service.Name + "Server) goingo.Engine {\n\n")
+	content.WriteString("  return &" + *service.Name + "Engine{srv}\n")
+	content.WriteString("}\n\n")
+
+	content.WriteString("func New" + *service.Name + "Client(engine goingo.Engine) (*" + *service.Name + "Client) { return &" + *service.Name + "Client{engine} }\n\n")
 	content.WriteString("type " + *service.Name + "Client struct {\n")
-	content.WriteString("  engine Engine\n")
+	content.WriteString("  engine goingo.Engine\n")
 	content.WriteString("}\n\n")
 	for _, m := range service.Method {
-		content.WriteString("func (*" + *service.Name + "Client) " + *m.Name + "(in " + nodot(*m.InputType) + ") (" + nodot(*m.OutputType) + ") { return nil }\n")
+		content.WriteString("func (c *" + *service.Name + "Client) " + *m.Name + "(ctx context.Context, in *" + nodot(*m.InputType) + ") (*" + nodot(*m.OutputType) + ", error) {")
+		content.WriteString("  b, err := in.Marshal()\n")
+		content.WriteString("  if err != nil { return nil, err }\n")
+		content.WriteString("  b, err = c.engine.Call(ctx, b)\n")
+		content.WriteString("  out := &" + nodot(*m.OutputType) + "{}\n")
+		content.WriteString("  err = out.Unmarshal(b)\n")
+		content.WriteString("  return out, err\n")
+		content.WriteString("}\n")
 	}
 }
 
@@ -83,13 +111,16 @@ func handleFile(fdp *descriptors.FileDescriptorProto) *plugin_go.CodeGeneratorRe
 	content := &strings.Builder{}
 	content.WriteString("package " + pkg + "\n\n")
 
+	content.WriteString("import \"github.com/fizx/goingo\"\n")
+	// content.WriteString("import proto \"github.com/gogo/protobuf/proto\"\n")
+	content.WriteString("import \"context\"\n")
+
 	for _, s := range fdp.Service {
 		handleService(s, content)
 	}
-	content.WriteString("import \"context\"\n\n")
 	// content.WriteString("import \"sync\"\n\n")
 	// content.WriteString("import \"errors\"\n\n")
-	// content.WriteString("import \"google.golang.org/protobuf/proto\"\n")
+	// content.WriteString("import proto \"google.golang.org/protobuf/proto\"\n")
 	out := content.String()
 	return &plugin_go.CodeGeneratorResponse_File{
 		Name:    &name,

@@ -5,8 +5,8 @@ package test
 
 import (
 	encoding_binary "encoding/binary"
-	"github.com/fizx/stubproto"
 	"github.com/fizx/stubproto/fmt"
+	"github.com/fizx/stubproto"
 	io "io"
 	math "math"
 	math_bits "math/bits"

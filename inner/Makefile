@@ -1,2 +1,2 @@
 default:
-	tinygo build -o main.wasm --target wasi ./main.go
+	tinygo build -o main.wasm --target wasi .
