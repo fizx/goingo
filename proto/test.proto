@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+service TestService {
+  rpc DoSomething (Entity) returns (Entity);
+}
+
+message Entity {
+  string id = 1;
+  double score = 3;
+}
