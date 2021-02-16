@@ -7,6 +7,10 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/fizx/stubproto v0.0.0-20210208214053-4e55052376d7 h1:U+8pzVAaZW30E+zdGTBAIx1cFrcWDNvo+21PKkU2nu8=
 github.com/fizx/stubproto v0.0.0-20210208214053-4e55052376d7/go.mod h1:oJUU/qos0GmPvI9OB5mp4Xw6QzAMy0dPOiDs8Ur5yyI=
+github.com/fizx/stubproto v0.0.0-20210216053240-1777e861d3db h1:abcYLY9YGqg+34NTZ2/YOJHN1MmldQNnA9fQnohdefk=
+github.com/fizx/stubproto v0.0.0-20210216053240-1777e861d3db/go.mod h1:oJUU/qos0GmPvI9OB5mp4Xw6QzAMy0dPOiDs8Ur5yyI=
+github.com/fizx/stubproto v0.0.0-20210216054707-e19a72ba56a2 h1:Ld3AN9I6YOdFOxnvHJzlGtBtXEvC1o1YlplWL5yB2Nw=
+github.com/fizx/stubproto v0.0.0-20210216054707-e19a72ba56a2/go.mod h1:oJUU/qos0GmPvI9OB5mp4Xw6QzAMy0dPOiDs8Ur5yyI=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=

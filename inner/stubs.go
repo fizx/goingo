@@ -5,32 +5,39 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/fizx/goingo"
 )
 
-var Errors = make(map[string]error)
-var Services = make(map[string]goingo.Engine)
+var buf [1024]byte
 
-func CallOut(string, []byte) []byte
-
-//export LastError
-func LastError(serviceName string) error {
-	return Errors[serviceName]
+//go:export bufAddr
+func bufAddr() *byte {
+	return &buf[0]
 }
 
+var Services = make(map[string]goingo.Engine)
+
+// func CallOut(name string, method string, message []byte) ([]byte, error)
+
+// func RawCallOut(name string, method string, message []byte) ([]byte, error)
+
 //export CallIn
-func CallIn(name string, message []byte) []byte {
-	Errors[name] = nil
+func CallIn() {
+	println("received CallIn")
+	name, method, message := goingo.NameUnpack(buf[:])
 	engine, ok := Services[name]
 	if !ok {
-		Errors[name] = errors.New("service not found: " + name)
-		return nil
+		println("service not found: " + name)
+		goingo.ResponseCopy(buf[:], nil, errors.New("service not found: "+name))
 	}
-	out, err := engine.Call(context.Background(), message)
+	println("found service for " + name)
+	println("method " + method)
+	fmt.Printf("message: (%v)\n", message)
+	out, err := engine.Call(context.Background(), name, method, message)
 	if err != nil {
-		Errors[name] = err
-		return nil
+		println("uh oh: " + err.Error())
 	}
-	return out
+	goingo.ResponseCopy(buf[:], out, err)
 }

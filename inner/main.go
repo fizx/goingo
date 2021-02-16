@@ -16,6 +16,7 @@ type TestServiceImpl struct {
 }
 
 func (t *TestServiceImpl) DoSomething(ctx context.Context, req *proto.Entity) (*proto.Entity, error) {
+	println("doing something")
 	req.Score *= 2
 	return req, nil
 }

@@ -13,4 +13,5 @@ gen-goingo:
 
 test:
 	make
+	cd inner && make
 	cd outer && make test

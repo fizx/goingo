@@ -63,6 +63,7 @@ func nodot(s string) string {
 func handleService(service *descriptors.ServiceDescriptorProto, content *strings.Builder) {
 	content.WriteString("type " + *service.Name + "Engine struct {\n\n")
 	content.WriteString("  srv " + *service.Name + "Server\n")
+
 	content.WriteString("}\n\n")
 
 	content.WriteString("type " + *service.Name + "Server interface {\n\n")
@@ -71,15 +72,14 @@ func handleService(service *descriptors.ServiceDescriptorProto, content *strings
 	}
 	content.WriteString("}\n\n")
 
-	content.WriteString("func (e *" + *service.Name + "Engine) Call(ctx context.Context, in []byte) ([]byte, error) {\n")
-	content.WriteString("  _, m, b := goingo.NameUnpack(in)\n")
+	content.WriteString("func (e *" + *service.Name + "Engine) Call(ctx context.Context, name string, m string, b []byte) ([]byte, error) {\n")
 	content.WriteString("  switch m {\n")
 
 	for _, m := range service.Method {
 		content.WriteString("  case \"" + *m.Name + "\":\n")
 		content.WriteString("    in := &" + nodot(*m.InputType) + "{} \n")
 		content.WriteString("    err := in.Unmarshal(b)\n")
-		content.WriteString("    if err != nil { return nil, err }\n")
+		content.WriteString("    if err != nil { return nil, errors.New(\"failed unmarshal into " + nodot(*m.InputType) + "\") }\n")
 		content.WriteString("    out, err := e.srv." + *m.Name + "(ctx, in)\n")
 		content.WriteString("    if err != nil { return nil, err }\n")
 		content.WriteString("    return out.Marshal()\n")
@@ -92,17 +92,20 @@ func handleService(service *descriptors.ServiceDescriptorProto, content *strings
 	content.WriteString("  return &" + *service.Name + "Engine{srv}\n")
 	content.WriteString("}\n\n")
 
-	content.WriteString("func New" + *service.Name + "Client(engine goingo.Engine) (*" + *service.Name + "Client) { return &" + *service.Name + "Client{engine} }\n\n")
+	content.WriteString("func New" + *service.Name + "Client(engine goingo.Engine, name string) (*" + *service.Name + "Client) { return &" + *service.Name + "Client{engine,name} }\n\n")
 	content.WriteString("type " + *service.Name + "Client struct {\n")
 	content.WriteString("  engine goingo.Engine\n")
+	content.WriteString("  name string\n")
 	content.WriteString("}\n\n")
 	for _, m := range service.Method {
 		content.WriteString("func (c *" + *service.Name + "Client) " + *m.Name + "(ctx context.Context, in *" + nodot(*m.InputType) + ") (*" + nodot(*m.OutputType) + ", error) {")
 		content.WriteString("  b, err := in.Marshal()\n")
 		content.WriteString("  if err != nil { return nil, err }\n")
-		content.WriteString("  b, err = c.engine.Call(ctx, b)\n")
+		content.WriteString("  b, err = c.engine.Call(ctx, c.name, \"" + *m.Name + "\", b)\n")
+		content.WriteString("  if err != nil { return nil, err }\n")
 		content.WriteString("  out := &" + nodot(*m.OutputType) + "{}\n")
 		content.WriteString("  err = out.Unmarshal(b)\n")
+		content.WriteString("  if err != nil { return nil, err }\n")
 		content.WriteString("  return out, err\n")
 		content.WriteString("}\n")
 	}

@@ -2,4 +2,4 @@ default:
 	go build .
 
 test:
-	go test .
+	go run .
