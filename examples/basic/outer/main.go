@@ -7,18 +7,12 @@ import (
 
 	proto "github.com/fizx/goingo/examples/basic/proto"
 	"github.com/fizx/goingo/service"
-	wasmer "github.com/wasmerio/wasmer-go/wasmer"
 )
 
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-func toString(instance *wasmer.Instance, off int, l int) string {
-	memory, err := instance.Exports.GetMemory("memory")
-	check(err)
-	return string(memory.Data()[off : off+l])
 }
 
 func main() {
