@@ -13,7 +13,8 @@ See also examples/basic/outer/main.go
 	rawService, err := service.Initialize(nil, wasmBytes)
 	
 	// set up your client with the generated code
-	client := proto.NewTestServiceClient(rawService, "hello")
+	serviceName := "test_service" // Needs to match the services bound in the wasm
+	client := proto.NewTestServiceClient(rawService, serviceName)
 
 	// Make a req/response
 	req := &proto.Entity{Id: "hi", Score: 2}
@@ -46,7 +47,7 @@ See also examples/basic/inner/main.go
 	:$ wget https://raw.githubusercontent.com/fizx/goingo/master/examples/basic/inner/stubs.go 
 
 	// In your main(), bind your services.
-	Services["hello"] = proto.BindTestServiceServer(&TestServiceImpl{})
+	Services["test_service"] = proto.BindTestServiceServer(&TestServiceImpl{})
 	
 	// Build with tinygo, and your already generated service definitions.
 	:$ tinygo build -o main.wasm --target wasi .
