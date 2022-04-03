@@ -9,10 +9,11 @@ type RawService interface {
 }
 
 type Desc struct {
-	Methods  []MethodDesc `json:"methods"`
-	Name     string       `json:"name"`
-	FullName string       `json:"fullName"`
-	Version  string       `json:"version"`
+	Methods  []MethodDesc                 `json:"methods"`
+	Name     string                       `json:"name"`
+	FullName string                       `json:"fullName"`
+	Version  string                       `json:"version"`
+	Binder   func(interface{}) RawService `json:"-"`
 }
 
 type MethodDesc struct {
